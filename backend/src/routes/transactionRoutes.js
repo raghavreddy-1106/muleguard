@@ -1,10 +1,11 @@
 const express = require("express");
 const pool = require("../db");
+const authenticateToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 // Get all transactions
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
@@ -30,7 +31,7 @@ router.get("/", async (req, res) => {
 });
 
 // Get one transaction
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT
@@ -63,7 +64,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create transaction
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   const {
     txn_id,
     account_id,

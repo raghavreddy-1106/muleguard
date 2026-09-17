@@ -1,9 +1,10 @@
 const express = require("express");
 const { assessTransaction } = require("../services/riskService");
+const authenticateToken = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/:txnId", async (req, res) => {
+router.get("/:txnId", authenticateToken, async (req, res) => {
   try {
     const result = await assessTransaction(req.params.txnId);
     res.json(result);
