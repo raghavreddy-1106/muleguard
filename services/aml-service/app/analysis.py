@@ -9,17 +9,14 @@ def analyze_network(transactions):
         target = str(tx["counterparty_account_id"])
         amount = float(tx["amount"])
 
-        graph.add_edge(
-            source,
-            target,
-            amount=amount
-        )
+        graph.add_edge(source, target, amount=amount)
 
-    results = []
+    suspicious_accounts = []
 
     for node in graph.nodes:
         incoming = graph.in_degree(node)
         outgoing = graph.out_degree(node)
+        total_activity = incoming + outgoing
 
         reasons = []
 
@@ -29,11 +26,15 @@ def analyze_network(transactions):
         if outgoing >= 3:
             reasons.append("High fan-out")
 
+        if total_activity >= 5:
+            reasons.append("High transaction activity")
+
         if reasons:
-            results.append({
+            suspicious_accounts.append({
                 "account_id": node,
                 "incoming_connections": incoming,
                 "outgoing_connections": outgoing,
+                "activity": total_activity,
                 "reasons": reasons
             })
 
@@ -42,6 +43,6 @@ def analyze_network(transactions):
     return {
         "nodes": graph.number_of_nodes(),
         "edges": graph.number_of_edges(),
-        "suspicious_accounts": results,
+        "suspicious_accounts": suspicious_accounts,
         "cycles": cycles
     }
