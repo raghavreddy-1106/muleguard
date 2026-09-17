@@ -39,10 +39,19 @@ def analyze_network(transactions):
             })
 
     cycles = list(nx.simple_cycles(graph))
+    edge_list = []
+
+    for source, target, data in graph.edges(data=True):
+        edge_list.append({
+            "source": source,
+            "target": target,
+            "amount": data.get("amount", 0)
+        })
 
     return {
         "nodes": graph.number_of_nodes(),
         "edges": graph.number_of_edges(),
+        "edge_list": edge_list,
         "suspicious_accounts": suspicious_accounts,
         "cycles": cycles
-    }
+}
