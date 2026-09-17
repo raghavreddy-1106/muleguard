@@ -5,6 +5,7 @@ const transactionRoutes = require("./routes/transactionRoutes");
 const { checkServices } = require("./services/riskService");
 const riskRoutes = require("./routes/riskRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const alertRoutes = require("./routes/alertRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/risk", riskRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/alerts", alertRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
