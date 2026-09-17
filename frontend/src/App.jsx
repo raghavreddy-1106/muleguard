@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Transactions from "./Transactions";
+import RiskView from "./RiskView";
 
 function App() {
   const [stats, setStats] = useState([
@@ -284,6 +285,7 @@ function App() {
           </div>
         </section>
         <Transactions />
+        <RiskView txnId={2} />
       </main>
     </div>
   );
