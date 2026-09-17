@@ -6,6 +6,9 @@ const requireRole = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
+const AML_SERVICE_URL =
+  process.env.AML_SERVICE_URL || "http://localhost:8001";
+
 router.get(
   "/analysis",
   authenticateToken,
@@ -21,7 +24,7 @@ router.get(
       `);
 
       const response = await axios.post(
-        "http://localhost:8001/analyze",
+        `${AML_SERVICE_URL}/analyze`,
         {
           transactions: result.rows,
         }

@@ -1,14 +1,15 @@
 const axios = require("axios");
 const pool = require("../db");
 
-const ML_SERVICE_URL = "http://localhost:8000";
-const AML_SERVICE_URL = "http://localhost:8001";
+const ML_SERVICE_URL =
+  process.env.ML_SERVICE_URL || "http://localhost:8000";
+
+const AML_SERVICE_URL =
+  process.env.AML_SERVICE_URL || "http://localhost:8001";
 
 async function assessTransaction(txnId) {
   const txResult = await pool.query(
-    `SELECT *
-     FROM transactions
-     WHERE txn_id = $1`,
+    `SELECT * FROM transactions WHERE txn_id = $1`,
     [txnId]
   );
 
@@ -19,75 +20,46 @@ async function assessTransaction(txnId) {
   const transaction = txResult.rows[0];
   const accountId = transaction.account_id;
 
-  // Get all transactions for this account
   const accountTxResult = await pool.query(
-    `SELECT *
-     FROM transactions
-     WHERE account_id = $1`,
+    `SELECT * FROM transactions WHERE account_id = $1`,
     [accountId]
   );
 
   const accountTx = accountTxResult.rows;
-
   const transactionCount = accountTx.length;
 
   const amounts = accountTx.map((tx) => Number(tx.amount));
-
-  const totalAmount = amounts.reduce(
-    (sum, amount) => sum + amount,
-    0
-  );
-
+  const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
   const avgAmount =
-    transactionCount > 0
-      ? totalAmount / transactionCount
-      : 0;
-
+    transactionCount > 0 ? totalAmount / transactionCount : 0;
   const maxAmount =
-    transactionCount > 0
-      ? Math.max(...amounts)
-      : 0;
+    transactionCount > 0 ? Math.max(...amounts) : 0;
 
   const uniqueCounterparties = new Set(
     accountTx.map((tx) => tx.counterparty_account_id)
   ).size;
 
-  // ML prediction
-  const mlResponse = await axios.post(
-    `${ML_SERVICE_URL}/predict`,
-    {
-      transaction_count: transactionCount,
-      total_amount: totalAmount,
-      avg_amount: avgAmount,
-      max_amount: maxAmount,
-      unique_counterparties: uniqueCounterparties,
-    }
-  );
+  const mlResponse = await axios.post(`${ML_SERVICE_URL}/predict`, {
+    transaction_count: transactionCount,
+    total_amount: totalAmount,
+    avg_amount: avgAmount,
+    max_amount: maxAmount,
+    unique_counterparties: uniqueCounterparties,
+  });
 
-  // Get all transactions for graph analysis
   const allTxResult = await pool.query(
-    `SELECT
-       account_id,
-       counterparty_account_id,
-       amount
-     FROM transactions`
+    `SELECT account_id, counterparty_account_id, amount FROM transactions`
   );
 
-  const amlResponse = await axios.post(
-    `${AML_SERVICE_URL}/analyze`,
-    {
-      transactions: allTxResult.rows,
-    }
-  );
+  const amlResponse = await axios.post(`${AML_SERVICE_URL}/analyze`, {
+    transactions: allTxResult.rows,
+  });
 
-  const mlScore = Number(
-    mlResponse.data.risk_score
-  );
+  const mlScore = Number(mlResponse.data.risk_score);
 
   const suspiciousAccount =
     amlResponse.data.suspicious_accounts.find(
-      (account) =>
-        String(account.account_id) === String(accountId)
+      (account) => String(account.account_id) === String(accountId)
     );
 
   const networkScore = suspiciousAccount ? 1 : 0;
@@ -99,11 +71,8 @@ async function assessTransaction(txnId) {
       ? 1
       : 0;
 
-  // Combine ML + rule + network scores
   const finalRiskScore =
-    mlScore * 0.6 +
-    ruleScore * 0.2 +
-    networkScore * 0.2;
+    mlScore * 0.6 + ruleScore * 0.2 + networkScore * 0.2;
 
   let riskLevel = "LOW";
 
@@ -113,7 +82,6 @@ async function assessTransaction(txnId) {
     riskLevel = "MEDIUM";
   }
 
-  // Generate explanation
   const reasons = [];
 
   if (mlScore >= 0.7) {
@@ -130,14 +98,11 @@ async function assessTransaction(txnId) {
     ml_score: Number(mlScore.toFixed(4)),
     rule_score: ruleScore,
     network_score: networkScore,
-    final_risk_score: Number(
-      finalRiskScore.toFixed(4)
-    ),
+    final_risk_score: Number(finalRiskScore.toFixed(4)),
     risk_level: riskLevel,
     reasons,
   };
 
-  // Decide action
   let decision = "ALLOW";
 
   if (riskLevel === "HIGH") {
@@ -146,20 +111,10 @@ async function assessTransaction(txnId) {
     decision = "REVIEW";
   }
 
-  // Save risk assessment
   await pool.query(
     `INSERT INTO risk_assessments
-     (
-       txn_id,
-       account_id,
-       ml_score,
-       rule_score,
-       network_score,
-       final_risk_score,
-       risk_level,
-       decision,
-       reasons
-     )
+     (txn_id, account_id, ml_score, rule_score, network_score,
+      final_risk_score, risk_level, decision, reasons)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     [
       txnId,
@@ -174,12 +129,20 @@ async function assessTransaction(txnId) {
     ]
   );
 
+  return { ...riskResult, decision };
+}
+
+async function checkServices() {
+  const mlResponse = await axios.get(`${ML_SERVICE_URL}/health`);
+  const amlResponse = await axios.get(`${AML_SERVICE_URL}/health`);
+
   return {
-    ...riskResult,
-    decision,
+    ml_service: mlResponse.data,
+    aml_service: amlResponse.data,
   };
 }
 
 module.exports = {
   assessTransaction,
+  checkServices,
 };
