@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import Transactions from "./Transactions";
 
 function App() {
   const [stats, setStats] = useState([
@@ -282,6 +283,7 @@ function App() {
             </table>
           </div>
         </section>
+        <Transactions />
       </main>
     </div>
   );
