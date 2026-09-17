@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
 const transactionRoutes = require("./routes/transactionRoutes");
+const { checkServices } = require("./services/riskService");
 require("dotenv").config();
 
 const app = express();
@@ -28,6 +29,18 @@ app.get("/api/db-health", async (req, res) => {
     res.status(500).json({
       database: "disconnected",
       error: error.message
+    });
+  }
+});
+
+app.get("/api/services-health", async (req, res) => {
+  try {
+    const result = await checkServices();
+    res.json(result);
+  } catch (error) {
+    res.status(503).json({
+      error: "One or more services are unavailable",
+      details: error.message
     });
   }
 });
