@@ -7,7 +7,7 @@ function Investigations() {
   const loadInvestigations = () => {
     const token = localStorage.getItem("token");
 
-    fetch("http://localhost:5001/api/investigations", {
+    fetch("https://muleguard-backend-jaw7.onrender.com/api/investigations", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -34,7 +34,7 @@ function Investigations() {
   const updateStatus = (id, status) => {
     const token = localStorage.getItem("token");
 
-    fetch(`http://localhost:5001/api/investigations/${id}`, {
+    fetch(`https://muleguard-backend-jaw7.onrender.com/api/investigations/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

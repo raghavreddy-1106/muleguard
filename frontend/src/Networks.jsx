@@ -5,7 +5,7 @@ function Networks() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/networks/analysis", {
+    fetch("https://muleguard-backend-jaw7.onrender.com/api/networks/analysis", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

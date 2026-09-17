@@ -22,7 +22,7 @@ function Transactions() {
 
   // Load transactions
   const loadTransactions = () => {
-    fetch("http://localhost:5001/api/transactions", {
+    fetch("https://muleguard-backend-jaw7.onrender.com/api/transactions", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -68,7 +68,7 @@ function Transactions() {
     try {
       // Create transaction
       const response = await fetch(
-        "http://localhost:5001/api/transactions",
+        "https://muleguard-backend-jaw7.onrender.com/api/transactions",
         {
           method: "POST",
           headers: {
@@ -104,7 +104,7 @@ function Transactions() {
 
       // Run risk assessment
       const riskResponse = await fetch(
-        `http://localhost:5001/api/risk/${newTransaction.txn_id}`,
+        `https://muleguard-backend-jaw7.onrender.com/api/risk/${newTransaction.txn_id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

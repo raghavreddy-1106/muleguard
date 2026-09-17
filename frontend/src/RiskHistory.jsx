@@ -9,7 +9,7 @@ function RiskHistory({ txnId }) {
 
     const token = localStorage.getItem("token");
 
-    fetch(`http://localhost:5001/api/risk/history/${txnId}`, {
+    fetch(`https://muleguard-backend-jaw7.onrender.com/api/risk/history/${txnId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

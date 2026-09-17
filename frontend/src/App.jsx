@@ -35,7 +35,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    fetch("http://localhost:5001/api/dashboard/summary", {
+    fetch("https://muleguard-backend-jaw7.onrender.com/api/dashboard/summary", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -73,7 +73,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    fetch("http://localhost:5001/api/alerts", {
+    fetch("https://muleguard-backend-jaw7.onrender.com/api/alerts", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -94,7 +94,7 @@ function App() {
   useEffect(() => {
     if (!user) return;
 
-    fetch("http://localhost:5001/api/networks/analysis", {
+    fetch("https://muleguard-backend-jaw7.onrender.com/api/networks/analysis", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

@@ -7,7 +7,7 @@ function RiskView({ txnId }) {
   useEffect(() => {
     if (!txnId) return;
 
-    fetch(`http://localhost:5001/api/risk/${txnId}`, {
+    fetch(`https://muleguard-backend-jaw7.onrender.com/api/risk/${txnId}`, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
