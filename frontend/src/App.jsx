@@ -3,8 +3,13 @@ import "./App.css";
 import Transactions from "./Transactions";
 import RiskView from "./RiskView";
 import Investigations from "./Investigations";
+import Login from "./Login";
 
 function App() {
+  const [user, setUser] = useState(() => {
+  const savedUser = localStorage.getItem("user");
+  return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [stats, setStats] = useState([
     { title: "Total Transactions", value: "0" },
     { title: "AML Alerts", value: "0" },
@@ -68,6 +73,10 @@ function App() {
         console.error("Alerts error:", error);
       });
   }, []);
+
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
 
   return (
     <div className="app">
