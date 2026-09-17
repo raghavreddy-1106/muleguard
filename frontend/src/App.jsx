@@ -1,88 +1,69 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-
-
-const alerts = [
-  {
-    id: "ALT-1025",
-    account: "ACC-0025",
-    type: "Cycle",
-    risk: "High",
-    score: "94%",
-    status: "Open",
-  },
-  {
-    id: "ALT-1024",
-    account: "ACC-0024",
-    type: "Fan-in",
-    risk: "High",
-    score: "88%",
-    status: "Review",
-  },
-  {
-    id: "ALT-1023",
-    account: "ACC-0026",
-    type: "High Activity",
-    risk: "Medium",
-    score: "67%",
-    status: "Open",
-  },
-  {
-    id: "ALT-1022",
-    account: "ACC-0018",
-    type: "Fan-out",
-    risk: "Low",
-    score: "24%",
-    status: "Closed",
-  },
-];
-
 function App() {
-
   const [stats, setStats] = useState([
-  { title: "Total Transactions", value: "0" },
-  { title: "AML Alerts", value: "0" },
-  { title: "High Risk Accounts", value: "0" },
-  { title: "Open Investigations", value: "0" },
-]);
+    { title: "Total Transactions", value: "0" },
+    { title: "AML Alerts", value: "0" },
+    { title: "High Risk Accounts", value: "0" },
+    { title: "Open Investigations", value: "0" },
+  ]);
 
-useEffect(() => {
-  fetch("http://localhost:5001/api/dashboard/summary")
-    .then((res) => {
-      if (!res.ok) throw new Error("Failed to load dashboard");
-      return res.json();
-    })
-    .then((data) => {
-      setStats([
-        {
-          title: "Total Transactions",
-          value: data.total_transactions.toLocaleString(),
-        },
-        {
-          title: "AML Alerts",
-          value: data.aml_alerts.toLocaleString(),
-        },
-        {
-          title: "High Risk Accounts",
-          value: data.high_risk_accounts.toLocaleString(),
-        },
-        {
-          title: "Open Investigations",
-          value: data.open_investigations.toLocaleString(),
-        },
-      ]);
-    })
-    .catch((error) => {
-      console.error("Dashboard error:", error);
-    });
-}, []);
+  const [alerts, setAlerts] = useState([]);
+
+  // Load dashboard statistics
+  useEffect(() => {
+    fetch("http://localhost:5001/api/dashboard/summary")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load dashboard");
+        return res.json();
+      })
+      .then((data) => {
+        setStats([
+          {
+            title: "Total Transactions",
+            value: data.total_transactions.toLocaleString(),
+          },
+          {
+            title: "AML Alerts",
+            value: data.aml_alerts.toLocaleString(),
+          },
+          {
+            title: "High Risk Accounts",
+            value: data.high_risk_accounts.toLocaleString(),
+          },
+          {
+            title: "Open Investigations",
+            value: data.open_investigations.toLocaleString(),
+          },
+        ]);
+      })
+      .catch((error) => {
+        console.error("Dashboard error:", error);
+      });
+  }, []);
+
+  // Load AML alerts
+  useEffect(() => {
+    fetch("http://localhost:5001/api/alerts")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load alerts");
+        return res.json();
+      })
+      .then((data) => {
+        setAlerts(data);
+      })
+      .catch((error) => {
+        console.error("Alerts error:", error);
+      });
+  }, []);
 
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-icon">M</div>
+
           <div>
             <h2>MuleGuard</h2>
             <span>AML Intelligence</span>
@@ -113,6 +94,7 @@ useEffect(() => {
 
           <div className="profile">
             <div className="avatar">AR</div>
+
             <div>
               <strong>AML Analyst</strong>
               <span>Compliance Team</span>
@@ -120,6 +102,7 @@ useEffect(() => {
           </div>
         </header>
 
+        {/* KPI CARDS */}
         <section className="stats-grid">
           {stats.map((stat) => (
             <div className="stat-card" key={stat.title}>
@@ -130,6 +113,7 @@ useEffect(() => {
           ))}
         </section>
 
+        {/* RISK + NETWORK */}
         <section className="dashboard-grid">
           <div className="panel risk-panel">
             <div className="panel-header">
@@ -137,6 +121,7 @@ useEffect(() => {
                 <h3>Risk Overview</h3>
                 <p>Current transaction risk distribution</p>
               </div>
+
               <span className="period">Last 30 days</span>
             </div>
 
@@ -146,11 +131,15 @@ useEffect(() => {
                   <span className="dot low"></span>
                   Low Risk
                 </div>
+
                 <strong>78%</strong>
               </div>
 
               <div className="progress">
-                <div className="progress-fill low-fill" style={{ width: "78%" }} />
+                <div
+                  className="progress-fill low-fill"
+                  style={{ width: "78%" }}
+                />
               </div>
 
               <div className="risk-row">
@@ -158,11 +147,15 @@ useEffect(() => {
                   <span className="dot medium"></span>
                   Medium Risk
                 </div>
+
                 <strong>16%</strong>
               </div>
 
               <div className="progress">
-                <div className="progress-fill medium-fill" style={{ width: "16%" }} />
+                <div
+                  className="progress-fill medium-fill"
+                  style={{ width: "16%" }}
+                />
               </div>
 
               <div className="risk-row">
@@ -170,11 +163,15 @@ useEffect(() => {
                   <span className="dot high"></span>
                   High Risk
                 </div>
+
                 <strong>6%</strong>
               </div>
 
               <div className="progress">
-                <div className="progress-fill high-fill" style={{ width: "6%" }} />
+                <div
+                  className="progress-fill high-fill"
+                  style={{ width: "6%" }}
+                />
               </div>
             </div>
           </div>
@@ -192,10 +189,12 @@ useEffect(() => {
                 <strong>37</strong>
                 <span>Risky Accounts</span>
               </div>
+
               <div>
                 <strong>12</strong>
                 <span>Networks</span>
               </div>
+
               <div>
                 <strong>5</strong>
                 <span>Cycles</span>
@@ -212,6 +211,7 @@ useEffect(() => {
           </div>
         </section>
 
+        {/* AML ALERTS */}
         <section className="panel">
           <div className="panel-header">
             <div>
@@ -230,28 +230,54 @@ useEffect(() => {
                   <th>Account</th>
                   <th>Pattern</th>
                   <th>Risk</th>
-                  <th>Score</th>
+                  <th>Decision</th>
                   <th>Status</th>
                 </tr>
               </thead>
 
               <tbody>
-                {alerts.map((alert) => (
-                  <tr key={alert.id}>
-                    <td>{alert.id}</td>
-                    <td>{alert.account}</td>
-                    <td>{alert.type}</td>
-                    <td>
-                      <span className={`risk-badge ${alert.risk.toLowerCase()}`}>
-                        {alert.risk}
-                      </span>
-                    </td>
-                    <td>{alert.score}</td>
-                    <td>
-                      <span className="status">{alert.status}</span>
+                {alerts.length === 0 ? (
+                  <tr>
+                    <td colSpan="6">
+                      No AML alerts available
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  alerts.map((alert) => {
+                    const risk = alert.is_fraud ? "High" : "Medium";
+
+                    return (
+                      <tr key={alert.alert_key}>
+                        <td>ALT-{alert.alert_key}</td>
+
+                        <td>
+                          ACC-
+                          {String(alert.account_id).padStart(4, "0")}
+                        </td>
+
+                        <td>{alert.check_name}</td>
+
+                        <td>
+                          <span
+                            className={`risk-badge ${risk.toLowerCase()}`}
+                          >
+                            {risk}
+                          </span>
+                        </td>
+
+                        <td>
+                          {alert.is_fraud ? "High" : "Review"}
+                        </td>
+
+                        <td>
+                          <span className="status">
+                            {alert.escalated_to_case_investigation}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
