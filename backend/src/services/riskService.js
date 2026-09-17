@@ -19,6 +19,7 @@ async function assessTransaction(txnId) {
   const transaction = txResult.rows[0];
   const accountId = transaction.account_id;
 
+  // Get all transactions for this account
   const accountTxResult = await pool.query(
     `SELECT *
      FROM transactions
@@ -30,30 +31,40 @@ async function assessTransaction(txnId) {
 
   const transactionCount = accountTx.length;
 
-  const amounts = accountTx.map(tx => Number(tx.amount));
+  const amounts = accountTx.map((tx) => Number(tx.amount));
 
-  const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
+  const totalAmount = amounts.reduce(
+    (sum, amount) => sum + amount,
+    0
+  );
 
   const avgAmount =
-    transactionCount > 0 ? totalAmount / transactionCount : 0;
+    transactionCount > 0
+      ? totalAmount / transactionCount
+      : 0;
 
   const maxAmount =
-    transactionCount > 0 ? Math.max(...amounts) : 0;
+    transactionCount > 0
+      ? Math.max(...amounts)
+      : 0;
 
   const uniqueCounterparties = new Set(
-    accountTx.map(tx => tx.counterparty_account_id)
+    accountTx.map((tx) => tx.counterparty_account_id)
   ).size;
 
   // ML prediction
-  const mlResponse = await axios.post(`${ML_SERVICE_URL}/predict`, {
-    transaction_count: transactionCount,
-    total_amount: totalAmount,
-    avg_amount: avgAmount,
-    max_amount: maxAmount,
-    unique_counterparties: uniqueCounterparties
-  });
+  const mlResponse = await axios.post(
+    `${ML_SERVICE_URL}/predict`,
+    {
+      transaction_count: transactionCount,
+      total_amount: totalAmount,
+      avg_amount: avgAmount,
+      max_amount: maxAmount,
+      unique_counterparties: uniqueCounterparties,
+    }
+  );
 
-  // Get all transactions for network analysis
+  // Get all transactions for graph analysis
   const allTxResult = await pool.query(
     `SELECT
        account_id,
@@ -62,15 +73,22 @@ async function assessTransaction(txnId) {
      FROM transactions`
   );
 
-  const amlResponse = await axios.post(`${AML_SERVICE_URL}/analyze`, {
-    transactions: allTxResult.rows
-  });
-
-  const mlScore = Number(mlResponse.data.risk_score);
-
-  const suspiciousAccount = amlResponse.data.suspicious_accounts.find(
-    account => String(account.account_id) === String(accountId)
+  const amlResponse = await axios.post(
+    `${AML_SERVICE_URL}/analyze`,
+    {
+      transactions: allTxResult.rows,
+    }
   );
+
+  const mlScore = Number(
+    mlResponse.data.risk_score
+  );
+
+  const suspiciousAccount =
+    amlResponse.data.suspicious_accounts.find(
+      (account) =>
+        String(account.account_id) === String(accountId)
+    );
 
   const networkScore = suspiciousAccount ? 1 : 0;
 
@@ -81,6 +99,7 @@ async function assessTransaction(txnId) {
       ? 1
       : 0;
 
+  // Combine ML + rule + network scores
   const finalRiskScore =
     mlScore * 0.6 +
     ruleScore * 0.2 +
@@ -94,6 +113,7 @@ async function assessTransaction(txnId) {
     riskLevel = "MEDIUM";
   }
 
+  // Generate explanation
   const reasons = [];
 
   if (mlScore >= 0.7) {
@@ -104,18 +124,62 @@ async function assessTransaction(txnId) {
     reasons.push(...suspiciousAccount.reasons);
   }
 
-  return {
+  const riskResult = {
     transaction_id: txnId,
     account_id: accountId,
     ml_score: Number(mlScore.toFixed(4)),
     rule_score: ruleScore,
     network_score: networkScore,
-    final_risk_score: Number(finalRiskScore.toFixed(4)),
+    final_risk_score: Number(
+      finalRiskScore.toFixed(4)
+    ),
     risk_level: riskLevel,
-    reasons
+    reasons,
+  };
+
+  // Decide action
+  let decision = "ALLOW";
+
+  if (riskLevel === "HIGH") {
+    decision = "BLOCK";
+  } else if (riskLevel === "MEDIUM") {
+    decision = "REVIEW";
+  }
+
+  // Save risk assessment
+  await pool.query(
+    `INSERT INTO risk_assessments
+     (
+       txn_id,
+       account_id,
+       ml_score,
+       rule_score,
+       network_score,
+       final_risk_score,
+       risk_level,
+       decision,
+       reasons
+     )
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+    [
+      txnId,
+      accountId,
+      riskResult.ml_score,
+      riskResult.rule_score,
+      riskResult.network_score,
+      riskResult.final_risk_score,
+      riskResult.risk_level,
+      decision,
+      reasons.join("; "),
+    ]
+  );
+
+  return {
+    ...riskResult,
+    decision,
   };
 }
 
 module.exports = {
-  assessTransaction
+  assessTransaction,
 };
