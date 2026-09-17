@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import Transactions from "./Transactions";
 import RiskView from "./RiskView";
+import Investigations from "./Investigations";
 
 function App() {
   const [stats, setStats] = useState([
@@ -15,7 +16,11 @@ function App() {
 
   // Load dashboard statistics
   useEffect(() => {
-    fetch("http://localhost:5001/api/dashboard/summary")
+    fetch("http://localhost:5001/api/dashboard/summary", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load dashboard");
         return res.json();
@@ -47,7 +52,11 @@ function App() {
 
   // Load AML alerts
   useEffect(() => {
-    fetch("http://localhost:5001/api/alerts")
+    fetch("http://localhost:5001/api/alerts", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load alerts");
         return res.json();
@@ -285,6 +294,7 @@ function App() {
           </div>
         </section>
         <Transactions />
+        <Investigations />
         <RiskView txnId={2} />
       </main>
     </div>

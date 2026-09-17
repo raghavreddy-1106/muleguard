@@ -5,7 +5,11 @@ function Transactions() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/transactions")
+    fetch("http://localhost:5001/api/transactions", {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load transactions");
         return res.json();

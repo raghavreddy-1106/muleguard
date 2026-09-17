@@ -7,7 +7,11 @@ function RiskView({ txnId }) {
   useEffect(() => {
     if (!txnId) return;
 
-    fetch(`http://localhost:5001/api/risk/${txnId}`)
+    fetch(`http://localhost:5001/api/risk/${txnId}`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load risk assessment");
         return res.json();
