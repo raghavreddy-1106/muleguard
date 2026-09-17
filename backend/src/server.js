@@ -8,6 +8,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const investigationRoutes = require("./routes/investigationRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -18,6 +19,7 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/risk", riskRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/investigations", investigationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 
