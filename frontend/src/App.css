@@ -533,3 +533,61 @@ td {
   color: #8a94a6;
   font-size: 11px;
 }
+.graph-container {
+  margin-top: 20px;
+  background: #f8fafc;
+  border: 1px solid #edf0f4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.network-svg {
+  width: 100%;
+  height: 450px;
+  display: block;
+}
+
+.network-edge {
+  stroke: #cbd4df;
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+
+.network-node {
+  fill: #173b68;
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.network-node.suspicious {
+  fill: #d86f6f;
+}
+
+.network-node-text {
+  fill: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.network-findings {
+  margin-top: 20px;
+}
+
+.network-findings h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.finding {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf0f4;
+  font-size: 12px;
+}
+
+.finding span {
+  color: #7b8598;
+  text-align: right;
+}

@@ -4,6 +4,7 @@ import Transactions from "./Transactions";
 import RiskView from "./RiskView";
 import Investigations from "./Investigations";
 import Login from "./Login";
+import Networks from "./Networks";
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -311,6 +312,7 @@ function App() {
         <Transactions />
         <Investigations />
         <RiskView txnId={2} />
+        <Networks />
       </main>
     </div>
   );
