@@ -10,6 +10,11 @@ function App() {
   const savedUser = localStorage.getItem("user");
   return savedUser ? JSON.parse(savedUser) : null;
   });
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  setUser(null);
+  };
   const [stats, setStats] = useState([
     { title: "Total Transactions", value: "0" },
     { title: "AML Alerts", value: "0" },
@@ -101,7 +106,8 @@ function App() {
 
         <div className="sidebar-bottom">
           <a>Settings</a>
-          <a>Logout</a>
+
+          <a onClick={handleLogout}>Logout</a>
         </div>
       </aside>
 
