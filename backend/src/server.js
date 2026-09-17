@@ -1,12 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
+const transactionRoutes = require("./routes/transactionRoutes");
 require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/transactions", transactionRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
