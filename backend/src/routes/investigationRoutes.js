@@ -2,6 +2,7 @@ const express = require("express");
 const pool = require("../db");
 const authenticateToken = require("../middleware/authMiddleware");
 const requireRole = require("../middleware/roleMiddleware");
+const { logAudit } = require("../services/auditService");
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ router.get(
     } catch (error) {
       res.status(500).json({
         error: "Failed to fetch investigations",
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -47,13 +48,14 @@ router.post(
   async (req, res) => {
     const { alert_key, account_id, notes = "" } = req.body;
 
-    if (alert_key === undefined ||
-        alert_key === null ||
-        account_id === undefined || 
-        account_id === null
+    if (
+      alert_key === undefined ||
+      alert_key === null ||
+      account_id === undefined ||
+      account_id === null
     ) {
       return res.status(400).json({
-        error: "alert_key and account_id are required"
+        error: "alert_key and account_id are required",
       });
     }
 
@@ -66,11 +68,19 @@ router.post(
         [alert_key, account_id, req.user.id, notes]
       );
 
+      await logAudit({
+        userId: req.user.id,
+        action: "CREATE_INVESTIGATION",
+        resourceType: "INVESTIGATION",
+        resourceId: result.rows[0].id,
+        details: `Created investigation for alert ${alert_key}, account ${account_id}`,
+      });
+
       res.status(201).json(result.rows[0]);
     } catch (error) {
       res.status(500).json({
         error: "Failed to create investigation",
-        details: error.message
+        details: error.message,
       });
     }
   }
@@ -89,12 +99,12 @@ router.patch(
       "IN_REVIEW",
       "CONFIRMED",
       "FALSE_POSITIVE",
-      "CLOSED"
+      "CLOSED",
     ];
 
     if (status && !allowedStatuses.includes(status)) {
       return res.status(400).json({
-        error: "Invalid investigation status"
+        error: "Invalid investigation status",
       });
     }
 
@@ -112,15 +122,25 @@ router.patch(
 
       if (result.rows.length === 0) {
         return res.status(404).json({
-          error: "Investigation not found"
+          error: "Investigation not found",
         });
       }
 
-      res.json(result.rows[0]);
+      const investigation = result.rows[0];
+
+      await logAudit({
+        userId: req.user.id,
+        action: "UPDATE_INVESTIGATION",
+        resourceType: "INVESTIGATION",
+        resourceId: investigation.id,
+        details: `Updated investigation status to ${investigation.status}`,
+      });
+
+      res.json(investigation);
     } catch (error) {
       res.status(500).json({
         error: "Failed to update investigation",
-        details: error.message
+        details: error.message,
       });
     }
   }

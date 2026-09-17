@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const investigationRoutes = require("./routes/investigationRoutes");
 const networkRoutes = require("./routes/networkRoutes");
+const auditRoutes = require("./routes/auditRoutes");
 require("dotenv").config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use("/api/investigations", investigationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/networks", networkRoutes);
+app.use("/api/audit", auditRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
